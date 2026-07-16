@@ -1,627 +1,1044 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Clincoo - Email Dashboard</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a0a;--bg2:#111111;--bg3:#1a1a1a;--bg4:#222222;--border:#2a2a2a;--border2:#333333;--text:#ffffff;--text2:#a0a0a0;--text3:#666666;--accent:#6366f1;--accent2:#4f46e5;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6}
-html{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh}
-a{text-decoration:none;color:inherit}
-button{cursor:pointer;border:none;font-family:inherit}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Clincoo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        blue: {
+                            50: '#f2f3ff',
+                            100: '#e6e7ff',
+                            200: '#cdd0ff',
+                            300: '#a4abff',
+                            400: '#7a85ff',
+                            500: '#5260ff',
+                            600: '#3c2aff', 
+                            700: '#2d1ec4',
+                            800: '#201693',
+                            900: '#140e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; 
+            color: #111827; 
+            overflow-x: hidden; 
+        }
+        
+        /* Font khusus untuk logo Clincoo */
+        .logo-font {
+            font-family: 'Abril Fatface', serif;
+        }
+        
+        #sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50; 
+        }
 
-/* LAYOUT */
-.app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;padding:0}
-.main{flex:1;overflow-y:auto;background:var(--bg)}
+        #overlay {
+            transition: opacity 0.3s ease;
+            z-index: 40;
+        }
 
-/* SIDEBAR */
-.sidebar-logo{padding:1.25rem 1.25rem 0.75rem;display:flex;align-items:center;gap:0.6rem}
-.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:8px;display:flex;align-items:center;justify-content:center}
-.logo-icon svg{width:16px;height:16px;fill:#fff}
-.logo-text{font-size:1.1rem;font-weight:700;letter-spacing:-0.02em}
-.sidebar-section{padding:0.5rem 0.75rem 0.25rem;font-size:0.65rem;font-weight:600;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
-.nav-item{display:flex;align-items:center;gap:0.65rem;padding:0.5rem 0.85rem;margin:0 0.5rem;border-radius:8px;cursor:pointer;font-size:0.875rem;color:var(--text2);transition:all 0.15s;position:relative}
-.nav-item:hover{background:var(--bg3);color:var(--text)}
-.nav-item.active{background:var(--bg4);color:var(--text)}
-.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:0.7}
-.nav-item.active svg{opacity:1}
-.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:0.65rem;font-weight:700;padding:1px 6px;border-radius:10px}
-.sidebar-divider{height:1px;background:var(--border);margin:0.5rem 0.75rem}
-.sidebar-bottom{margin-top:auto;padding:0.75rem}
-.user-card{display:flex;align-items:center;gap:0.65rem;padding:0.6rem 0.75rem;border-radius:10px;cursor:pointer;transition:background 0.15s}
-.user-card:hover{background:var(--bg3)}
-.user-avatar{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0}
-.user-info .name{font-size:0.8rem;font-weight:600}
-.user-info .plan{font-size:0.7rem;color:var(--text3)}
+        .hamburger-icon {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 24px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .hamburger-icon span {
+            display: block;
+            height: 2px;
+            background-color: currentColor; 
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
 
-/* MAIN HEADER */
-.main-header{padding:1.5rem 1.75rem 0;display:flex;align-items:center;justify-content:space-between}
-.main-header h1{font-size:1.5rem;font-weight:700;letter-spacing:-0.03em}
-.header-actions{display:flex;gap:0.5rem;align-items:center}
-.btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 0.85rem;border-radius:8px;font-size:0.825rem;font-weight:500;transition:all 0.15s}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:var(--accent2)}
-.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
-.btn-ghost:hover{background:var(--bg3);color:var(--text)}
-.btn svg{width:14px;height:14px}
+        .hamburger-icon span:nth-child(1) { width: 100%; }
+        .hamburger-icon span:nth-child(2) { width: 75%; align-self: flex-end; } 
+        .hamburger-icon span:nth-child(3) { width: 100%; }
+        
+        .hamburger-wrapper:hover .hamburger-icon span:nth-child(2) {
+            width: 100%;
+        }
 
-/* TABS */
-.tabs{display:flex;padding:1rem 1.75rem 0;gap:0.15rem}
-.tab{padding:0.45rem 1rem;border-radius:20px;font-size:0.85rem;font-weight:500;cursor:pointer;color:var(--text2);transition:all 0.15s;background:transparent;border:none}
-.tab.active{background:var(--bg3);color:var(--text)}
-.tab:hover:not(.active){color:var(--text)}
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
 
-/* FILTERS */
-.filters{padding:1rem 1.75rem;display:flex;flex-direction:column;gap:0.6rem}
-.search-wrap{position:relative}
-.search-icon{position:absolute;left:0.85rem;top:50%;transform:translateY(-50%);color:var(--text3)}
-.search-icon svg{width:14px;height:14px}
-.search-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.6rem 0.85rem 0.6rem 2.25rem;font-size:0.875rem;color:var(--text);outline:none;transition:border 0.15s}
-.search-input::placeholder{color:var(--text3)}
-.search-input:focus{border-color:var(--border2)}
-.filter-row{display:flex;gap:0.5rem;flex-wrap:wrap}
-.select-wrap{position:relative;flex:1;min-width:140px}
-.select-wrap svg{position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text3);width:14px;height:14px}
-select{width:100%;appearance:none;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.55rem 2rem 0.55rem 0.85rem;font-size:0.875rem;color:var(--text2);outline:none;cursor:pointer;transition:border 0.15s}
-select:hover,select:focus{border-color:var(--border2);color:var(--text)}
-.export-btn{display:flex;align-items:center;gap:0.5rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.55rem 1rem;font-size:0.875rem;color:var(--text2);cursor:pointer;transition:all 0.15s;white-space:nowrap}
-.export-btn:hover{border-color:var(--border2);color:var(--text)}
-.export-btn svg{width:14px;height:14px}
-
-/* TABLE */
-.table-wrap{padding:0 1.75rem 1.75rem}
-.table-header{display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1.5fr;padding:0.6rem 1rem;border-bottom:1px solid var(--border)}
-.table-header span{font-size:0.72rem;font-weight:600;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase}
-.email-row{display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1.5fr;padding:0.75rem 1rem;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 0.1s;border-radius:0}
-.email-row:hover{background:var(--bg3)}
-.email-row:last-child{border-bottom:none}
-.to-cell{display:flex;align-items:center;gap:0.65rem}
-.email-avatar{width:32px;height:32px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.email-avatar svg{width:16px;height:16px;fill:#fff}
-.email-addr{font-size:0.875rem;font-weight:500}
-.subject-cell{font-size:0.875rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.status-badge{display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.72rem;font-weight:600}
-.status-badge.sent{background:rgba(34,197,94,0.1);color:var(--green)}
-.status-badge.delivered{background:rgba(34,197,94,0.1);color:var(--green)}
-.status-badge.opened{background:rgba(99,102,241,0.1);color:var(--accent)}
-.status-badge.bounced{background:rgba(239,68,68,0.1);color:var(--red)}
-.status-badge.pending{background:rgba(245,158,11,0.1);color:var(--yellow)}
-.status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
-.date-cell{font-size:0.8rem;color:var(--text3)}
-.from-cell{font-size:0.8rem;color:var(--text2)}
-
-/* STATS ROW */
-.stats-row{display:flex;gap:0.75rem;padding:0 1.75rem 1.25rem;flex-wrap:wrap}
-.stat-card{flex:1;min-width:100px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:0.85rem 1rem}
-.stat-card .stat-label{font-size:0.7rem;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.35rem}
-.stat-card .stat-num{font-size:1.35rem;font-weight:700}
-.stat-card .stat-sub{font-size:0.7rem;color:var(--text3);margin-top:0.15rem}
-.stat-green{color:var(--green)}
-.stat-blue{color:var(--blue)}
-.stat-red{color:var(--red)}
-.stat-yellow{color:var(--yellow)}
-
-/* EMPTY */
-.empty-state{text-align:center;padding:3rem;color:var(--text3)}
-.empty-state svg{width:48px;height:48px;margin:0 auto 1rem;opacity:0.3}
-.empty-state h3{font-size:1rem;margin-bottom:0.35rem;color:var(--text2)}
-
-/* COMPOSE MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:50;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.modal-overlay.open{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:90%;max-width:550px;padding:1.5rem;animation:slideUp 0.2s ease}
-@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
-.modal-header h2{font-size:1.1rem;font-weight:700}
-.close-btn{background:var(--bg3);border:none;color:var(--text2);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.close-btn svg{width:14px;height:14px}
-.form-group{margin-bottom:0.85rem}
-.form-label{font-size:0.78rem;font-weight:500;color:var(--text2);margin-bottom:0.35rem;display:block}
-.form-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.6rem 0.85rem;font-size:0.875rem;color:var(--text);outline:none;transition:border 0.15s;font-family:inherit}
-.form-input:focus{border-color:var(--accent)}
-textarea.form-input{min-height:120px;resize:vertical}
-.modal-footer{display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem}
-
-/* TOAST */
-.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:0.85rem 1.25rem;display:flex;align-items:center;gap:0.65rem;font-size:0.875rem;z-index:100;transform:translateY(100px);opacity:0;transition:all 0.35s cubic-bezier(0.4,0,0.2,1)}
-.toast.show{transform:translateY(0);opacity:1}
-.toast svg{width:18px;height:18px;flex-shrink:0}
-.toast.success svg{color:var(--green)}
-.toast.error svg{color:var(--red)}
-
-/* DETAIL PANEL */
-.detail-panel{position:fixed;right:0;top:0;bottom:0;width:400px;background:var(--bg2);border-left:1px solid var(--border);z-index:40;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);overflow-y:auto}
-.detail-panel.open{transform:translateX(0)}
-.detail-header{padding:1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
-.detail-body{padding:1.25rem}
-.detail-field{margin-bottom:1rem}
-.detail-field .label{font-size:0.7rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem}
-.detail-field .value{font-size:0.875rem;color:var(--text);word-break:break-all}
-.detail-html-preview{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1rem;font-size:0.825rem;color:var(--text2);line-height:1.6;margin-top:0.5rem;max-height:300px;overflow-y:auto}
-
-/* API docs */
-.api-section{padding:0 1.75rem 1.75rem}
-.code-block{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;font-family:"Fira Code",monospace;font-size:0.8rem;color:#a5f3fc;line-height:1.7;overflow-x:auto;position:relative}
-.code-block .kw{color:#c084fc}
-.code-block .str{color:#86efac}
-.code-block .key{color:#93c5fd}
-.copy-code{position:absolute;top:0.75rem;right:0.75rem;background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:0.3rem 0.6rem;font-size:0.7rem;color:var(--text2);cursor:pointer;transition:all 0.15s}
-.copy-code:hover{color:var(--text)}
-.api-info{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
-.api-url{font-family:monospace;font-size:0.8rem;color:var(--accent);word-break:break-all}
-.method-badge{display:inline-block;background:rgba(99,102,241,0.15);color:var(--accent);font-size:0.7rem;font-weight:700;padding:0.2rem 0.5rem;border-radius:5px;margin-right:0.5rem;font-family:monospace}
-
-/* Mobile */
-@media(max-width:700px){
-.sidebar{width:56px;overflow:hidden}
-.logo-text,.sidebar-section,.nav-item span,.user-info,.nav-badge{display:none}
-.sidebar-logo{padding:1rem;justify-content:center}
-.nav-item{padding:0.6rem;margin:0 0.25rem;justify-content:center}
-.nav-item svg{opacity:1}
-.main-header h1{font-size:1.1rem}
-.table-header,.email-row{grid-template-columns:2fr 1fr}
-.subject-cell,.date-cell,.from-cell{display:none}
-.detail-panel{width:100%}
-.stats-row{flex-wrap:wrap}
-.stat-card{min-width:calc(50% - 0.375rem)}
-}
-</style>
+        .menu-item {
+            transition: background-color 0.2s, padding-left 0.2s, color 0.2s;
+        }
+        .menu-item:hover, .menu-item:active {
+            background-color: #f3f4f6;
+            padding-left: 1.5rem; 
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="antialiased min-h-screen flex flex-col relative touch-pan-y">
 
-<div class="app">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-      </div>
-      <span class="logo-text">Clincoo</span>
+    <header class="bg-white text-gray-900 shadow-sm sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div id="header-logo" class="flex-shrink-0 flex items-center cursor-pointer" onclick="showToast('Memuat ulang dasbor...')">
+                    <span class="logo-font text-2xl tracking-wide text-blue-600">Clincoo</span>
+                </div>
+                <div id="header-back" class="hidden flex-shrink-0 flex items-center">
+                    <button onclick="toggleView(false)" class="flex items-center text-gray-600 hover:text-blue-600 transition-colors font-medium text-sm group">
+                        <svg class="w-5 h-5 mr-1.5 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Kembali
+                    </button>
+                </div>
+                
+                <nav id="header-nav" class="hidden md:flex items-center space-x-6 lg:space-x-8">
+                    <a href="email.html" class="text-blue-600 font-semibold border-b-2 border-blue-600 py-5">Email</a>
+                    <a href="siaran.html" class="text-gray-500 hover:text-gray-900 font-medium py-5 transition-colors">Siaran</a>
+                    <a href="otomatisasi.html" class="text-gray-500 hover:text-gray-900 font-medium py-5 transition-colors">Otomatisasi</a>
+                    <a href="templat.html" class="text-gray-500 hover:text-gray-900 font-medium py-5 transition-colors">Templat</a>
+                    <a href="audiens.html" class="text-gray-500 hover:text-gray-900 font-medium py-5 transition-colors">Audiens</a>
+                </nav>
+
+                <div id="header-right" class="flex items-center">
+                    <button id="menuButton" class="hamburger-wrapper p-2 focus:outline-none md:hidden" aria-expanded="false" aria-controls="sidebar">
+                        <span class="sr-only">Buka menu utama</span>
+                        <div class="hamburger-icon text-gray-900">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-5 py-3 rounded-lg shadow-xl opacity-0 transform translate-y-4 transition-all duration-300 z-[100] flex items-center font-medium text-sm pointer-events-none">
+        <span id="toast-message">Pesan</span>
     </div>
 
-    <div class="sidebar-section">Send</div>
-    <div class="nav-item active" onclick="showPage('emails')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-      <span>Emails</span>
-      <span class="nav-badge" id="emailCount">2</span>
-    </div>
-    <div class="nav-item" onclick="showPage('compose')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      <span>Compose</span>
-    </div>
-    <div class="nav-item" onclick="showPage('api')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-      <span>API Docs</span>
-    </div>
+    <main class="flex-grow flex flex-col p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full relative">
+        
+        <!-- AREA DASHBOARD UTAMA -->
+        <div id="dashboard-view" class="flex-grow flex flex-col w-full">
+            <div class="mb-6 flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-gray-900">Email</h1>
+                <button id="btn-create" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Buat Email
+                </button>
+            </div>
 
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-section">Config</div>
-    <div class="nav-item" onclick="showPage('keys')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-      <span>API Keys</span>
-    </div>
-    <div class="nav-item" onclick="showPage('domains')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-      <span>Domains</span>
-    </div>
+            <div class="flex justify-between items-center mb-6 relative z-20">
+                <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg border border-gray-200">
+                    <button id="tab-sending" class="px-4 py-1.5 bg-white text-gray-900 shadow-sm rounded-md text-sm font-medium focus:outline-none transition-all">Mengirim</button>
+                    <button id="tab-receiving" class="px-4 py-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-200/50 rounded-md text-sm font-medium focus:outline-none transition-all">Menerima</button>
+                </div>
+                
+                <div>
+                    <!-- Tombol Titik 3 (Toggle Filter) -->
+                    <button id="btn-filter-toggle" class="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg border border-transparent focus:outline-none transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
 
-    <div class="sidebar-bottom">
-      <div class="user-card">
-        <div class="user-avatar">W</div>
-        <div class="user-info">
-          <div class="name">Wikybook</div>
-          <div class="plan">Free Plan</div>
+                    <!-- Panel Filter & Ekspor (Tersembunyi by default) -->
+                    <div id="filter-panel" class="absolute right-0 top-12 mt-1 w-72 sm:w-80 bg-white border border-gray-200 rounded-xl shadow-2xl hidden flex-col overflow-visible">
+                        <div class="p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl">
+                            <h3 class="font-semibold text-gray-900 text-sm">Filter & Ekspor</h3>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            
+                            <!-- Dropdown Tanggal -->
+                            <div class="relative dropdown-container" id="date-dropdown-container">
+                                <button type="button" class="dropdown-button relative w-full bg-white border border-gray-300 rounded-lg shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm transition-colors flex items-center justify-between">
+                                    <span class="block truncate text-gray-700 font-medium" id="date-btn-text">15 hari terakhir</span>
+                                    <svg class="h-4 w-4 text-gray-400 absolute right-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div class="dropdown-menu absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl hidden left-0 text-sm overflow-hidden">
+                                    <div class="p-2 border-b border-gray-100 flex flex-wrap gap-1 bg-gray-50/50">
+                                        <button class="date-preset-btn px-2.5 py-1.5 rounded-md hover:bg-gray-200 text-gray-700 transition-colors text-xs font-medium" data-value="Hari ini">Hari ini</button>
+                                        <button class="date-preset-btn px-2.5 py-1.5 rounded-md hover:bg-gray-200 text-gray-700 transition-colors text-xs font-medium" data-value="Kemarin">Kemarin</button>
+                                        <button class="date-preset-btn px-2.5 py-1.5 rounded-md hover:bg-gray-200 text-gray-700 transition-colors text-xs font-medium" data-value="7 hari terakhir">7H</button>
+                                        <button class="date-preset-btn px-2.5 py-1.5 rounded-md bg-blue-100 text-blue-700 transition-colors text-xs font-medium" data-value="15 hari terakhir">15H</button>
+                                        <button class="date-preset-btn px-2.5 py-1.5 rounded-md hover:bg-gray-200 text-gray-700 transition-colors text-xs font-medium" data-value="30 hari terakhir">30H</button>
+                                    </div>
+                                    <div class="p-4 select-none">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <button id="prev-month" class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                                            <span id="calendar-month-year" class="font-semibold text-gray-900 text-sm">Memuat...</span>
+                                            <button id="next-month" class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+                                        </div>
+                                        <div class="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-2 font-medium">
+                                            <div>Mg</div><div>Sn</div><div>Sl</div><div>Rb</div><div>Km</div><div>Jm</div><div>Sb</div>
+                                        </div>
+                                        <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center text-sm">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dropdown Status -->
+                            <div class="relative dropdown-container">
+                                <button type="button" class="dropdown-button relative w-full bg-white border border-gray-300 rounded-lg shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm transition-colors flex items-center justify-between">
+                                    <span class="block truncate text-gray-700 dropdown-selected-text flex items-center">
+                                        <span class="w-2 h-2 rounded-full border border-gray-400 mr-2"></span> Semua Status
+                                    </span>
+                                    <svg class="h-4 w-4 text-gray-400 absolute right-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div class="dropdown-menu absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg hidden text-sm">
+                                    <div class="p-1.5 space-y-0.5">
+                                        <button class="dropdown-option w-full px-3 py-2 rounded-md hover:bg-gray-50 text-gray-900 flex items-center font-medium" data-html='<span class="w-2 h-2 rounded-full border border-gray-400 mr-2"></span> Semua Status'>
+                                            <span class="w-2 h-2 rounded-full border border-gray-400 mr-3"></span>Semua Status
+                                        </button>
+                                        <button class="dropdown-option w-full px-3 py-2 rounded-md hover:bg-gray-50 text-gray-700 flex items-center" data-html='<span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span> Terkirim'>
+                                            <span class="w-2 h-2 rounded-full bg-green-500 mr-3"></span>Terkirim
+                                        </button>
+                                        <button class="dropdown-option w-full px-3 py-2 rounded-md hover:bg-gray-50 text-gray-700 flex items-center" data-html='<span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> Dibuka'>
+                                            <span class="w-2 h-2 rounded-full bg-blue-500 mr-3"></span>Dibuka
+                                        </button>
+                                        <button class="dropdown-option w-full px-3 py-2 rounded-md hover:bg-gray-50 text-gray-700 flex items-center" data-html='<span class="w-2 h-2 rounded-full bg-red-400 mr-2"></span> Ditolak'>
+                                            <span class="w-2 h-2 rounded-full bg-red-400 mr-3"></span>Ditolak
+                                        </button>
+                                        <button class="dropdown-option w-full px-3 py-2 rounded-md hover:bg-gray-50 text-gray-700 flex items-center" data-html='<span class="w-2 h-2 rounded-full bg-yellow-400 mr-2"></span> Komplain'>
+                                            <span class="w-2 h-2 rounded-full bg-yellow-400 mr-3"></span>Komplain
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dropdown API -->
+                            <div class="relative dropdown-container">
+                                <button type="button" class="dropdown-button relative w-full bg-white border border-gray-300 rounded-lg shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm transition-colors flex items-center justify-between">
+                                    <span class="block truncate text-gray-700 dropdown-selected-text">Semua Kunci API</span>
+                                    <svg class="h-4 w-4 text-gray-400 absolute right-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div class="dropdown-menu absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg hidden text-sm">
+                                    <div class="p-1.5 space-y-0.5">
+                                        <button class="dropdown-option w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 text-gray-900 font-medium" data-html="Semua Kunci API">Semua Kunci API</button>
+                                        <button class="dropdown-option w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 text-gray-700" data-html="Kunci Onboarding">Kunci Onboarding</button>
+                                        <button class="dropdown-option w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 text-gray-700" data-html="API Produksi">API Produksi</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Tombol Ekspor -->
+                            <button id="exportBtn" type="button" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                <svg class="-ml-1 mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                                Ekspor CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative mb-6">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors" placeholder="Cari email atau subjek...">
+            </div>
+
+            <div class="bg-white shadow-sm rounded-xl border border-gray-200 pb-20 sm:pb-0 relative min-h-[350px] flex flex-col"> 
+                
+                <!-- Tampilan Header Desktop -->
+                <div class="bg-gray-50/80 px-4 py-3 border-b border-gray-200 hidden sm:flex text-xs font-semibold text-gray-500 rounded-t-xl uppercase tracking-wider">
+                    <div class="w-4/12">Ke</div>
+                    <div class="w-2/12">Status</div>
+                    <div class="w-4/12">Subjek</div>
+                    <div class="w-2/12 text-right">Terkirim</div>
+                </div>
+                <!-- Tampilan Header Mobile -->
+                <div class="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 sm:hidden flex text-xs font-semibold text-gray-500 rounded-t-xl uppercase tracking-wider">
+                    Daftar Email Terbaru
+                </div>
+
+                <div id="emailListContainer" class="flex flex-col">
+                </div>
+                
+                <div id="emptyState" class="hidden flex-col items-center justify-center flex-grow py-8 text-center">
+                    <!-- Area Canvas 3D -->
+                    <div id="canvas-container" class="w-full h-48 sm:h-56 mb-4"></div>
+                    <h3 class="mt-2 text-base font-semibold text-gray-900">Tidak ada email ditemukan</h3>
+                    <p class="mt-1 text-sm text-gray-500" id="empty-state-text">Coba sesuaikan pencarian atau buat email baru.</p>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </aside>
 
-  <!-- MAIN -->
-  <main class="main">
+        <div id="compose-view" class="flex-grow flex-col w-full hidden">
+            <div class="mb-6 flex items-center">
+                <button id="btn-back" class="mr-4 p-2 bg-white border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </button>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Buat Email Baru</h1>
+            </div>
 
-    <!-- EMAILS PAGE -->
-    <div id="page-emails">
-      <div class="main-header">
-        <h1>Emails</h1>
-        <div class="header-actions">
-          <button class="btn btn-ghost" onclick="loadEmails()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-4.36"/></svg>
-            Refresh
-          </button>
-          <button class="btn btn-primary" onclick="openCompose()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><line x1="18.5" y1="2.5" x2="21.5" y2="5.5"/><polyline points="14 8 21 1 23 3 16 10"/></svg>
-            Compose
-          </button>
-        </div>
-      </div>
-
-      <div class="tabs">
-        <button class="tab active" onclick="switchTab('sending',this)">Sending</button>
-        <button class="tab" onclick="switchTab('receiving',this)">Receiving</button>
-      </div>
-
-      <div class="stats-row" id="statsRow">
-        <div class="stat-card"><div class="stat-label">Total Sent</div><div class="stat-num stat-blue" id="totalSent">-</div><div class="stat-sub">All time</div></div>
-        <div class="stat-card"><div class="stat-label">Delivered</div><div class="stat-num stat-green" id="totalDelivered">-</div><div class="stat-sub">Last 15 days</div></div>
-        <div class="stat-card"><div class="stat-label">Opened</div><div class="stat-num" id="totalOpened">-</div><div class="stat-sub">Last 15 days</div></div>
-        <div class="stat-card"><div class="stat-label">Bounced</div><div class="stat-num stat-red" id="totalBounced">-</div><div class="stat-sub">Last 15 days</div></div>
-      </div>
-
-      <div class="filters">
-        <div class="search-wrap">
-          <div class="search-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </div>
-          <input class="search-input" type="text" placeholder="Search..." id="searchInput" oninput="filterEmails()">
-        </div>
-        <div class="filter-row">
-          <div class="select-wrap">
-            <select id="dateFilter" onchange="filterEmails()">
-              <option>Last 15 days</option>
-              <option>Last 7 days</option>
-              <option>Last 30 days</option>
-              <option>All time</option>
-            </select>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-          <div class="select-wrap">
-            <select id="statusFilter" onchange="filterEmails()">
-              <option>All Statuses</option>
-              <option>sent</option>
-              <option>delivered</option>
-              <option>opened</option>
-              <option>bounced</option>
-            </select>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-          <button class="export-btn" onclick="exportCSV()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export
-          </button>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <div class="table-header">
-          <span>To</span>
-          <span>Subject</span>
-          <span>Status</span>
-          <span>From</span>
-          <span>Date</span>
-        </div>
-        <div id="emailsList"></div>
-      </div>
-    </div>
-
-    <!-- API DOCS PAGE -->
-    <div id="page-api" style="display:none">
-      <div class="main-header"><h1>API Documentation</h1></div>
-      <div class="api-section">
-        <div class="api-info">
-          <div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.35rem">Base Endpoint</div>
-          <div><span class="method-badge">POST</span><span class="api-url">https://koda-da05205d.base44.app/functions/sendEmail</span></div>
+            <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-5 sm:p-8 flex-grow">
+                <form id="compose-form" class="space-y-6">
+                    <div>
+                        <label for="compose-to" class="block text-sm font-medium text-gray-700 mb-1">Kepada</label>
+                        <input type="email" id="compose-to" required class="block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="contoh@email.com">
+                    </div>
+                    <div>
+                        <label for="compose-subject" class="block text-sm font-medium text-gray-700 mb-1">Subjek</label>
+                        <input type="text" id="compose-subject" required class="block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Masukkan subjek email">
+                    </div>
+                    <div>
+                        <label for="compose-body" class="block text-sm font-medium text-gray-700 mb-1">Pesan</label>
+                        <textarea id="compose-body" rows="8" required class="block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Tulis pesan Anda di sini..."></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+                        <button type="button" id="btn-cancel" class="px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors">Batal</button>
+                        <button type="submit" class="px-5 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-colors">Kirim Email</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <div style="margin-bottom:1rem">
-          <div style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem">Send Email</div>
-          <div style="font-size:0.8rem;color:var(--text2);margin-bottom:0.75rem">Send transactional emails via Resend API. Powered by Clincoo backend.</div>
-        </div>
+    </main>
 
-        <div style="font-size:0.78rem;font-weight:600;color:var(--text3);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.05em">Request Body</div>
-        <div class="code-block" style="margin-bottom:1rem">
-          <button class="copy-code" onclick="copyCode(this)">Copy</button>
-<span class="kw">{</span>
-  <span class="key">"to"</span>: <span class="str">"recipient@example.com"</span>,
-  <span class="key">"subject"</span>: <span class="str">"Hello from Clincoo"</span>,
-  <span class="key">"html"</span>: <span class="str">"&lt;p&gt;Your email content&lt;/p&gt;"</span>,
-  <span class="key">"from"</span>: <span class="str">"Name &lt;noreply@resend.dev&gt;"</span>  <span style="color:var(--text3)">// optional</span>
-<span class="kw">}</span>
-        </div>
+    <div id="overlay" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm opacity-0 pointer-events-none" aria-hidden="true"></div>
 
-        <div style="font-size:0.78rem;font-weight:600;color:var(--text3);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.05em">Example — JavaScript</div>
-        <div class="code-block" style="margin-bottom:1rem">
-          <button class="copy-code" onclick="copyCode(this)">Copy</button>
-<span class="kw">const</span> res = <span class="kw">await</span> fetch(<span class="str">'https://koda-da05205d.base44.app/functions/sendEmail'</span>, {
-  method: <span class="str">'POST'</span>,
-  headers: { <span class="key">'Content-Type'</span>: <span class="str">'application/json'</span> },
-  body: JSON.stringify({
-    to: <span class="str">'user@example.com'</span>,
-    subject: <span class="str">'Order Confirmed!'</span>,
-    html: <span class="str">'&lt;h1&gt;Thanks for your order!&lt;/h1&gt;'</span>
-  })
-});
-<span class="kw">const</span> data = <span class="kw">await</span> res.json();
-console.log(data); <span style="color:var(--text3)">// { success: true, id: "..." }</span>
-        </div>
-
-        <div style="font-size:0.78rem;font-weight:600;color:var(--text3);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.05em">Example — cURL</div>
-        <div class="code-block">
-          <button class="copy-code" onclick="copyCode(this)">Copy</button>
-curl -X POST https://koda-da05205d.base44.app/functions/sendEmail   -H <span class="str">"Content-Type: application/json"</span>   -d <span class="str">'{"to":"user@example.com","subject":"Hello","html":"&lt;p&gt;Hi!&lt;/p&gt;"}'</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- COMPOSE PAGE -->
-    <div id="page-compose" style="display:none">
-      <div class="main-header"><h1>Compose Email</h1></div>
-      <div class="api-section">
-        <div style="max-width:550px">
-          <div class="form-group"><label class="form-label">To</label><input class="form-input" id="c_to" type="email" placeholder="recipient@example.com"></div>
-          <div class="form-group"><label class="form-label">Subject</label><input class="form-input" id="c_sub" type="text" placeholder="Email subject..."></div>
-          <div class="form-group"><label class="form-label">Message (HTML supported)</label><textarea class="form-input" id="c_body" placeholder="<p>Your message here...</p>"></textarea></div>
-          <div style="display:flex;gap:0.5rem">
-            <button class="btn btn-primary" onclick="sendCompose()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Send Email
+    <div id="sidebar" class="fixed inset-y-0 right-0 w-72 sm:w-80 bg-white shadow-2xl transform translate-x-full overflow-y-auto flex flex-col" tabindex="-1">
+        
+        <div class="px-6 py-3 flex items-center justify-between border-b border-gray-100">
+            <span class="font-bold text-lg text-gray-900">Menu Utama</span>
+            <button id="closeButton" type="button" class="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none">
+                <span class="sr-only">Tutup menu</span>
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
-            <button class="btn btn-ghost" onclick="clearCompose()">Clear</button>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- API KEYS PAGE -->
-    <div id="page-keys" style="display:none">
-      <div class="main-header"><h1>API Keys</h1></div>
-      <div class="api-section">
-        <div class="api-info">
-          <div style="font-size:0.8rem;color:var(--text2);margin-bottom:0.75rem">Your Resend API key is stored securely in Base44 secrets. Never expose it in frontend code.</div>
-          <div style="display:flex;align-items:center;gap:0.5rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.65rem 1rem">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--accent)"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <span style="font-family:monospace;font-size:0.85rem;color:var(--text2);flex:1">re_••••••••••••••••••••••••••••••••</span>
-            <span style="font-size:0.7rem;background:rgba(34,197,94,0.1);color:var(--green);padding:0.2rem 0.5rem;border-radius:5px;font-weight:600">Active</span>
-          </div>
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto" id="sidebarNav">
+            <!-- Tautan menu sekarang mengarah ke file .html masing-masing -->
+            <a href="email.html" class="menu-item flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg transition-all" data-name="Email">
+                <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                Email
+            </a>
+            
+            <a href="siaran.html" class="menu-item flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg" data-name="Siaran">
+                <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                Siaran
+            </a>
+            <a href="otomatisasi.html" class="menu-item flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg" data-name="Otomatisasi">
+                <svg class="h-5 w-5 mr-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="8" height="8" x="3" y="3" rx="2"/>
+                  <path d="M7 11v4a2 2 0 0 0 2 2h4"/>
+                  <rect width="8" height="8" x="13" y="13" rx="2"/>
+                </svg>
+                Otomatisasi
+            </a>
+            <a href="templat.html" class="menu-item flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg" data-name="Templat">
+                <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
+                Templat
+            </a>
+            <a href="audiens.html" class="menu-item flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg" data-name="Audiens">
+                <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                Audiens
+            </a>
+            
+            <div class="my-4 border-t border-gray-100 pt-4 space-y-1.5">
+                <a href="domain.html" class="menu-item flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg" data-name="Domain">
+                    <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                    Domain
+                </a>
+                <a href="api.html" class="menu-item flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg" data-name="Kunci API">
+                    <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                    Kunci API
+                </a>
+            </div>
+        </nav>
+        
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-between items-center mt-auto">
+             <p class="text-xs text-gray-500">&copy; 2026 Clincoo</p>
+             <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-md">AD</div>
         </div>
-        <div style="font-size:0.8rem;color:var(--text3);margin-top:0.5rem">To update the key, go to Base44 Editor → Security → Secrets</div>
-      </div>
     </div>
 
-    <!-- DOMAINS PAGE -->
-    <div id="page-domains" style="display:none">
-      <div class="main-header"><h1>Domains</h1></div>
-      <div class="api-section">
-        <div class="api-info">
-          <div style="font-size:0.8rem;color:var(--text2);margin-bottom:0.5rem">Verify a custom domain to send emails from your own address (e.g. noreply@yourdomain.com).</div>
-        </div>
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:3rem 1.5rem;text-align:center">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;color:var(--text3);margin:0 auto 0.75rem"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-          <div style="font-size:0.9rem;font-weight:600;margin-bottom:0.35rem">No domains verified</div>
-          <div style="font-size:0.8rem;color:var(--text3);margin-bottom:1rem">Add a domain at resend.com/domains to send from your own address</div>
-          <a href="https://resend.com/domains" target="_blank" class="btn btn-primary" style="display:inline-flex">Open Resend Domains →</a>
-        </div>
-      </div>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Data diubah menggunakan let agar mendukung manipulasi (CRUD)
+            let emailData = [];
 
-  </main>
-</div>
+            // --- STREAMING_CHUNK:Membuat Favicon Dinamis dari Font Abril Fatface ---
+            const createDynamicFavicon = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
 
-<!-- COMPOSE MODAL -->
-<div class="modal-overlay" id="composeModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>New Email</h2>
-      <button class="close-btn" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="form-group"><label class="form-label">To</label><input class="form-input" id="m_to" type="email" placeholder="recipient@example.com"></div>
-    <div class="form-group"><label class="form-label">Subject</label><input class="form-input" id="m_sub" type="text" placeholder="Subject..."></div>
-    <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="m_body" placeholder="Your message..."></textarea></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="sendModal()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        Send
-      </button>
-    </div>
-  </div>
-</div>
+                // Bersihkan canvas agar latar belakang sepenuhnya transparan
+                ctx.clearRect(0, 0, 64, 64);
 
-<!-- DETAIL PANEL -->
-<div class="detail-panel" id="detailPanel">
-  <div class="detail-header">
-    <h2 style="font-size:1rem">Email Detail</h2>
-    <button class="close-btn" onclick="closeDetail()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-  </div>
-  <div class="detail-body" id="detailBody"></div>
-</div>
+                // Gambar huruf 'C' menggunakan font Abril Fatface
+                ctx.fillStyle = '#3c2aff'; // Warna biru kustom Clincoo
+                ctx.font = 'bold 54px "Abril Fatface", serif'; // Ukuran diperbesar agar pas
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Posisikan pas di tengah (X: 32, Y: 34 untuk kompensasi visual baseline font)
+                ctx.fillText('C', 32, 34);
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <svg id="toastIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-  <span id="toastMsg"></span>
-</div>
+                // Daftarkan sebagai favicon halaman
+                let link = document.querySelector("link[rel~='icon']");
+                if (!link) {
+                    link = document.createElement('link');
+                    link.rel = 'icon';
+                    document.getElementsByTagName('head')[0].appendChild(link);
+                }
+                link.href = canvas.toDataURL('image/x-icon');
+            };
 
-<script>
-const API = 'https://koda-da05205d.base44.app/functions/sendEmail';
-let emails = [];
-let currentTab = 'sending';
+            // Tunggu hingga font Google selesai dimuat sepenuhnya agar rendering 'C' di favicon presisi
+            if (document.fonts) {
+                document.fonts.load('1em "Abril Fatface"').then(() => {
+                    createDynamicFavicon();
+                });
+            } else {
+                setTimeout(createDynamicFavicon, 500);
+            }
 
-// Sample sent emails for demo
-const sampleEmails = [
-  {id:'e1',to:'devconium1@gmail.com',subject:'Test Email dari Resend API - Base44',status:'delivered',from:'noreply@resend.dev',date:new Date(Date.now()-3600000),html:'<h2>Halo Wikybook!</h2><p>Ini email test dari backend function Base44 menggunakan Resend API.</p>'},
-  {id:'e2',to:'devconium1@gmail.com',subject:'Test Email dari Resend API - Base44',status:'delivered',from:'noreply@resend.dev',date:new Date(Date.now()-7200000),html:'<h2>Halo Wikybook!</h2><p>Resend integration berhasil!</p>'},
-];
+            // Variabel untuk Three.js
+            let threeInitialized = false;
 
-function loadEmails(){
-  emails = [...sampleEmails];
-  renderEmails(emails);
-  updateStats(emails);
-  showToast('Emails refreshed','success');
-}
+            const initThreeJS = () => {
+                if(threeInitialized) return;
+                const container = document.getElementById('canvas-container');
+                if(!container) return;
 
-function updateStats(list){
-  document.getElementById('totalSent').textContent = list.length;
-  document.getElementById('totalDelivered').textContent = list.filter(e=>e.status==='delivered'||e.status==='opened').length;
-  document.getElementById('totalOpened').textContent = list.filter(e=>e.status==='opened').length;
-  document.getElementById('totalBounced').textContent = list.filter(e=>e.status==='bounced').length;
-  document.getElementById('emailCount').textContent = list.length;
-}
+                const scene = new THREE.Scene();
+                // Latar belakang transparan
+                
+                const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+                camera.position.z = 6;
 
-function renderEmails(list){
-  const el = document.getElementById('emailsList');
-  if(!list.length){
-    el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><h3>No emails found</h3><p>Try adjusting your filters</p></div>';
-    return;
-  }
-  el.innerHTML = list.map((e,i) => `
-    <div class="email-row" onclick="showDetail(${i})">
-      <div class="to-cell">
-        <div class="email-avatar"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
-        <span class="email-addr">${e.to}</span>
-      </div>
-      <div class="subject-cell">${e.subject}</div>
-      <div><span class="status-badge ${e.status}"><span class="status-dot"></span>${e.status}</span></div>
-      <div class="from-cell">${e.from}</div>
-      <div class="date-cell">${formatDate(e.date)}</div>
-    </div>
-  `).join('');
-}
+                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                renderer.setSize(container.clientWidth, container.clientHeight);
+                container.appendChild(renderer.domElement);
 
-function filterEmails(){
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const s = document.getElementById('statusFilter').value;
-  let list = emails.filter(e => {
-    const matchQ = !q || e.to.toLowerCase().includes(q) || e.subject.toLowerCase().includes(q);
-    const matchS = s === 'All Statuses' || e.status === s;
-    return matchQ && matchS;
-  });
-  renderEmails(list);
-}
+                // Pencahayaan
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                scene.add(ambientLight);
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                dirLight.position.set(5, 10, 5);
+                scene.add(dirLight);
 
-function switchTab(tab, el){
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  if(tab === 'receiving'){
-    renderEmails([]);
-    document.getElementById('totalSent').textContent='0';
-    document.getElementById('totalDelivered').textContent='0';
-    document.getElementById('totalOpened').textContent='0';
-    document.getElementById('totalBounced').textContent='0';
-  } else {
-    renderEmails(emails);
-    updateStats(emails);
-  }
-}
+                // --- STREAMING_CHUNK:Membuat Objek Mail 3D (Terbuka dengan Kertas) ---
+                const group = new THREE.Group();
 
-function showDetail(i){
-  const e = emails[i];
-  const panel = document.getElementById('detailPanel');
-  document.getElementById('detailBody').innerHTML = `
-    <div class="detail-field"><div class="label">To</div><div class="value">${e.to}</div></div>
-    <div class="detail-field"><div class="label">Subject</div><div class="value">${e.subject}</div></div>
-    <div class="detail-field"><div class="label">From</div><div class="value">${e.from}</div></div>
-    <div class="detail-field"><div class="label">Status</div><div class="value"><span class="status-badge ${e.status}"><span class="status-dot"></span>${e.status}</span></div></div>
-    <div class="detail-field"><div class="label">Date</div><div class="value">${e.date.toLocaleString()}</div></div>
-    <div class="detail-field"><div class="label">Message ID</div><div class="value" style="font-family:monospace;font-size:0.75rem;color:var(--text3)">${e.id}</div></div>
-    <div class="detail-field"><div class="label">HTML Preview</div><div class="detail-html-preview">${e.html}</div></div>
-  `;
-  panel.classList.add('open');
-}
+                // 1. Kertas Surat (Letter)
+                const paperGeo = new THREE.BoxGeometry(2.6, 2.4, 0.02);
+                const paperMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+                const paper = new THREE.Mesh(paperGeo, paperMat);
+                paper.position.set(0, 0.5, 0);
+                group.add(paper);
 
-function closeDetail(){
-  document.getElementById('detailPanel').classList.remove('open');
-}
+                // Garis-garis teks abstrak pada Kertas
+                const lineMat = new THREE.MeshStandardMaterial({ color: 0xe5e7eb });
+                const lineGeo1 = new THREE.BoxGeometry(1.8, 0.08, 0.04);
+                const line1 = new THREE.Mesh(lineGeo1, lineMat);
+                line1.position.set(0, 1.2, 0);
+                group.add(line1);
 
-function showPage(page){
-  ['emails','api','compose','keys','domains'].forEach(p=>{
-    document.getElementById('page-'+p).style.display = p===page?'':'none';
-  });
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  closeDetail();
-}
+                const line2 = new THREE.Mesh(lineGeo1, lineMat);
+                line2.position.set(0, 0.9, 0);
+                group.add(line2);
 
-function openCompose(){ document.getElementById('composeModal').classList.add('open'); }
-function closeModal(){ document.getElementById('composeModal').classList.remove('open'); }
+                const lineGeo2 = new THREE.BoxGeometry(1.0, 0.08, 0.04);
+                const line3 = new THREE.Mesh(lineGeo2, lineMat);
+                line3.position.set(-0.4, 0.6, 0);
+                group.add(line3);
 
-async function sendModal(){
-  const to = document.getElementById('m_to').value;
-  const sub = document.getElementById('m_sub').value;
-  const body = document.getElementById('m_body').value;
-  if(!to||!sub) return showToast('Fill in To and Subject!','error');
-  await doSend(to, sub, body || sub);
-  closeModal();
-}
+                // Settings untuk extrude bentuk amplop
+                const extrudeSettings = { depth: 0.02, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 2 };
 
-async function sendCompose(){
-  const to = document.getElementById('c_to').value;
-  const sub = document.getElementById('c_sub').value;
-  const body = document.getElementById('c_body').value;
-  if(!to||!sub) return showToast('Fill in To and Subject!','error');
-  await doSend(to, sub, body || sub);
-}
+                // 2. Badan Belakang Amplop
+                const backShape = new THREE.Shape();
+                backShape.moveTo(-1.5, -1);
+                backShape.lineTo(1.5, -1);
+                backShape.lineTo(1.5, 1);
+                backShape.lineTo(-1.5, 1);
+                backShape.lineTo(-1.5, -1);
+                
+                const backGeo = new THREE.ExtrudeGeometry(backShape, extrudeSettings);
+                const backMat = new THREE.MeshStandardMaterial({ color: 0x3c2aff, roughness: 0.5 }); // Biru gelap
+                const back = new THREE.Mesh(backGeo, backMat);
+                back.position.set(0, 0, -0.06); 
+                group.add(back);
 
-async function doSend(to, subject, html){
-  showToast('Sending...','');
-  try {
-    const res = await fetch(API, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({to, subject, html})
-    });
-    const data = await res.json();
-    if(data.success){
-      const newEmail = {id:data.id||'e'+Date.now(),to,subject,status:'sent',from:'noreply@resend.dev',date:new Date(),html};
-      emails.unshift(newEmail);
-      renderEmails(emails);
-      updateStats(emails);
-      showToast('Email sent successfully!','success');
-    } else {
-      showToast(data.error||'Failed to send email','error');
-    }
-  } catch(err){
-    showToast('Network error: '+err.message,'error');
-  }
-}
+                // 3. Lipatan Atas (Tutup amplop yang sedang terbuka)
+                const topShape = new THREE.Shape();
+                topShape.moveTo(-1.5, 1);
+                topShape.lineTo(0, 1.8);
+                topShape.lineTo(1.5, 1);
+                topShape.lineTo(-1.5, 1);
 
-function clearCompose(){
-  document.getElementById('c_to').value='';
-  document.getElementById('c_sub').value='';
-  document.getElementById('c_body').value='';
-}
+                const topGeo = new THREE.ExtrudeGeometry(topShape, extrudeSettings);
+                const topFlap = new THREE.Mesh(topGeo, backMat);
+                topFlap.position.set(0, 0, -0.06);
+                group.add(topFlap);
 
-function exportCSV(){
-  const rows = [['To','Subject','Status','From','Date'],...emails.map(e=>[e.to,e.subject,e.status,e.from,e.date.toISOString()])];
-  const csv = rows.map(r=>r.join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download = 'clincoo-emails.csv';
-  a.click();
-}
+                // 4. Badan Depan Amplop (Saku)
+                const frontShape = new THREE.Shape();
+                frontShape.moveTo(-1.5, -1);
+                frontShape.lineTo(1.5, -1);
+                frontShape.lineTo(1.5, 1);
+                frontShape.lineTo(0, -0.1); // Lekukan V di tengah
+                frontShape.lineTo(-1.5, 1);
+                frontShape.lineTo(-1.5, -1);
 
-function formatDate(d){
-  const now = new Date();
-  const diff = now - d;
-  if(diff < 60000) return 'just now';
-  if(diff < 3600000) return Math.floor(diff/60000)+'m ago';
-  if(diff < 86400000) return Math.floor(diff/3600000)+'h ago';
-  return d.toLocaleDateString();
-}
+                const frontGeo = new THREE.ExtrudeGeometry(frontShape, extrudeSettings);
+                const frontMat = new THREE.MeshStandardMaterial({ color: 0x5260ff, roughness: 0.5 }); // Biru utama
+                const front = new THREE.Mesh(frontGeo, frontMat);
+                front.position.set(0, 0, 0.04); 
+                group.add(front);
 
-function showToast(msg, type){
-  const t = document.getElementById('toast');
-  const icon = document.getElementById('toastIcon');
-  document.getElementById('toastMsg').textContent = msg;
-  t.className = 'toast '+(type||'');
-  if(type==='error') icon.innerHTML='<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
-  else icon.innerHTML='<polyline points="20 6 9 17 4 12"/>';
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3000);
-}
+                // 5. Lipatan Bawah (Segitiga penutup depan)
+                const bottomFlapShape = new THREE.Shape();
+                bottomFlapShape.moveTo(-1.5, -1);
+                bottomFlapShape.lineTo(1.5, -1);
+                bottomFlapShape.lineTo(0, 0.4);
+                bottomFlapShape.lineTo(-1.5, -1);
 
-function copyCode(btn){
-  const block = btn.parentElement;
-  const text = block.innerText.replace('Copy','').trim();
-  navigator.clipboard.writeText(text);
-  btn.textContent = 'Copied!';
-  setTimeout(()=>btn.textContent='Copy', 2000);
-}
+                const bottomFlapGeo = new THREE.ExtrudeGeometry(bottomFlapShape, extrudeSettings);
+                const bottomFlapMat = new THREE.MeshStandardMaterial({ color: 0x7a85ff, roughness: 0.5 }); // Biru terang
+                const bottomFlap = new THREE.Mesh(bottomFlapGeo, bottomFlapMat);
+                bottomFlap.position.set(0, 0, 0.06);
+                group.add(bottomFlap);
 
-// Init
-loadEmails();
-</script>
+                // 6. Segel Lilin (Wax Seal) Merah di tengah
+                const sealGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.04, 32);
+                const sealMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.2, metalness: 0.1 }); 
+                const seal = new THREE.Mesh(sealGeo, sealMat);
+                seal.rotation.x = Math.PI / 2; 
+                seal.position.set(0, 0.15, 0.10); 
+                group.add(seal);
+
+                scene.add(group);
+
+                // Animasi berputar dan mengambang
+                const clock = new THREE.Clock();
+                const animateLoop = () => {
+                    requestAnimationFrame(animateLoop);
+                    const time = clock.getElapsedTime();
+                    
+                    group.rotation.y += 0.008; // Putaran stabil
+                    group.rotation.x = Math.sin(time * 1.5) * 0.1; // Goyangan atas bawah
+                    group.position.y = (Math.sin(time * 2) * 0.15) - 0.2; // Mengambang dengan penyesuaian posisi tengah
+
+                    renderer.render(scene, camera);
+                };
+                
+                animateLoop();
+
+                // Handle resize canvas
+                window.addEventListener('resize', () => {
+                    if(container) {
+                        camera.aspect = container.clientWidth / container.clientHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(container.clientWidth, container.clientHeight);
+                    }
+                });
+
+                threeInitialized = true;
+            };
+
+            const renderEmails = (data) => {
+                const container = document.getElementById('emailListContainer');
+                const emptyState = document.getElementById('emptyState');
+                
+                if (data.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    emptyState.classList.add('flex');
+                    // Inisialisasi animasi 3D saat status kosong dirender
+                    setTimeout(initThreeJS, 100); 
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+
+                container.innerHTML = data.map((item, index) => {
+                    const isLast = index === data.length - 1;
+                    
+                    let statusClasses = "";
+                    if(item.status === 'Dibuka') statusClasses = "bg-blue-50 text-blue-700 border-blue-200";
+                    else if(item.status === 'Terkirim') statusClasses = "bg-green-50 text-green-700 border-green-200";
+                    else if(item.status === 'Ditolak') statusClasses = "bg-red-50 text-red-700 border-red-200";
+                    else statusClasses = "bg-gray-100 text-gray-700 border-gray-200";
+
+                    return `
+                    <div class="flex flex-col sm:flex-row sm:items-center px-4 py-4 sm:py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors ${isLast ? 'rounded-b-xl border-b-0' : ''} gap-2.5 sm:gap-0">
+                        
+                        <!-- Kolom 1: Email & Status (Mobile Layout) -->
+                        <div class="w-full sm:w-4/12 flex items-center justify-between sm:justify-start space-x-3">
+                            <div class="flex items-center space-x-3 overflow-hidden">
+                                <div class="flex-shrink-0">
+                                    <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-500 text-xs font-bold uppercase shadow-sm">
+                                        ${item.email.charAt(0)}
+                                    </div>
+                                </div>
+                                <div class="truncate">
+                                    <p class="text-sm font-semibold text-gray-900 truncate">${item.email}</p>
+                                </div>
+                            </div>
+                            <!-- Status di Mobile (Tampil di kanan atas sejajar email) -->
+                            <div class="flex sm:hidden items-center flex-shrink-0">
+                                <span class="px-2.5 py-0.5 inline-flex text-[10px] leading-4 font-bold rounded-full border ${statusClasses} shadow-sm">
+                                    ${item.status}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Kolom 2: Status (Desktop saja) -->
+                        <div class="hidden sm:flex sm:w-2/12 items-center">
+                            <span class="px-2.5 py-1 inline-flex text-xs leading-4 font-bold rounded-full border ${statusClasses} shadow-sm">
+                                ${item.status}
+                            </span>
+                        </div>
+
+                        <!-- Kolom 3: Subjek (Mobile memiliki box abu-abu tipis agar estetik) -->
+                        <div class="w-full sm:w-4/12 flex items-center sm:pr-4">
+                            <span class="text-sm text-gray-700 truncate bg-gray-50/80 sm:bg-transparent px-3 py-1.5 sm:px-0 sm:py-0 rounded-md sm:rounded-none border border-gray-100 sm:border-transparent w-full font-medium sm:font-normal">${item.subject}</span>
+                        </div>
+                        
+                        <!-- Kolom 4: Waktu & Aksi (Bawah di Mobile, Kanan di Desktop) -->
+                        <div class="w-full sm:w-2/12 flex justify-between sm:justify-end items-center mt-1 sm:mt-0">
+                            <span class="text-xs sm:text-sm text-gray-500 whitespace-nowrap flex items-center">
+                                <svg class="w-3.5 h-3.5 mr-1 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                ${item.time}
+                            </span>
+                            
+                            <div class="relative dropdown-container ml-3">
+                                <button class="dropdown-button text-gray-400 hover:text-blue-600 p-1.5 rounded-md focus:outline-none hover:bg-blue-50 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                                </button>
+                                <div class="dropdown-menu absolute right-0 top-8 z-30 w-40 bg-white border border-gray-200 rounded-xl shadow-xl hidden overflow-hidden">
+                                    <ul class="py-1 text-sm text-gray-700">
+                                        <li>
+                                            <button class="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center text-gray-700 transition-colors" onclick="showToast('ID disalin ke papan klip!')">
+                                                <svg class="w-4 h-4 mr-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                Salin ID
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button class="w-full text-left px-4 py-2.5 hover:bg-red-50 flex items-center text-red-600 transition-colors" onclick="hapusEmail('${item.id}')">
+                                                <svg class="w-4 h-4 mr-2.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                Hapus
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+            };
+
+            // Render awal
+            renderEmails(emailData);
+
+            
+            // Logika Menghapus Email
+            window.hapusEmail = (id) => {
+                emailData = emailData.filter(item => item.id !== id);
+                renderEmails(emailData);
+                showToast('Email berhasil dihapus');
+            };
+
+            const btnCreate = document.getElementById('btn-create');
+            const btnBack = document.getElementById('btn-back');
+            const btnCancel = document.getElementById('btn-cancel');
+            const dashboardView = document.getElementById('dashboard-view');
+            const composeView = document.getElementById('compose-view');
+            const composeForm = document.getElementById('compose-form');
+
+            // Logika Berpindah Halaman/View
+            const toggleView = (showCompose) => {
+                if (showCompose) {
+                    dashboardView.classList.add('hidden');
+                    dashboardView.classList.remove('flex');
+                    composeView.classList.remove('hidden');
+                    composeView.classList.add('flex');
+                    // Header: hide logo + nav, show back CTA
+                    document.getElementById('header-logo').classList.add('hidden');
+                    document.getElementById('header-nav').classList.add('hidden');
+                    document.getElementById('header-back').classList.remove('hidden');
+                    document.getElementById('header-back').classList.add('flex');
+                } else {
+                    composeView.classList.add('hidden');
+                    composeView.classList.remove('flex');
+                    dashboardView.classList.remove('hidden');
+                    dashboardView.classList.add('flex');
+                    // Header: restore logo + nav, hide back CTA
+                    document.getElementById('header-logo').classList.remove('hidden');
+                    document.getElementById('header-nav').classList.remove('hidden');
+                    document.getElementById('header-back').classList.add('hidden');
+                    document.getElementById('header-back').classList.remove('flex');
+                }
+            };
+
+            // Make toggleView globally accessible (for header back button onclick)
+            window.toggleView = toggleView;
+
+            btnCreate.addEventListener('click', () => toggleView(true));
+            btnBack.addEventListener('click', () => toggleView(false));
+            btnCancel.addEventListener('click', () => toggleView(false));
+
+            // --- STREAMING_CHUNK:Mengintegrasikan Fetch API untuk Deno Backend ---
+            composeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const to = document.getElementById('compose-to').value;
+                const subject = document.getElementById('compose-subject').value;
+                const bodyText = document.getElementById('compose-body').value;
+                const submitBtn = composeForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.textContent;
+                
+                // Animasi Loading
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mengirim...';
+
+                // Payload ini dirancang persis agar sesuai dengan SDK @base44 di Deno script Anda
+                const payload = {
+                    to: to,
+                    subject: subject,
+                    text: bodyText,
+                    html: `<p>${bodyText.replace(/\n/g, '<br>')}</p>`,
+                    from: "admin@clincoo.com" // Anda dapat menyesuaikan email pengirim
+                };
+
+                try {
+                    // Endpoint diset ke localhost port standar Deno serve (Ubah jika di-deploy ke production)
+                    const response = await fetch('https://elara-e9d0d44d.base44.app/functions/sendEmail', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json().catch(() => ({})); 
+
+                    if (response.ok || result.success) {
+                        showToast('Email berhasil dikirim melalui API!');
+                        
+                        // Menambah data HANYA jika Deno API merespons dengan sukses
+                        const newEmail = {
+                            id: Date.now().toString(),
+                            email: to,
+                            subject: subject,
+                            status: 'Terkirim',
+                            time: 'Baru saja'
+                        };
+                        
+                        emailData.unshift(newEmail);
+                        toggleView(false); // Kembali ke dasbor
+                        composeForm.reset();
+                        renderEmails(emailData);
+                    } else {
+                        // Lempar error jika gagal (Tanpa mode simulasi)
+                        throw new Error(result.error || 'Gagal mengirim email.');
+                    }
+                } catch (error) {
+                    console.error("Kesalahan Fetch:", error);
+                    // Tampilkan Error sesungguhnya di UI
+                    showToast(`Gagal: ${error.message || 'Server Deno tidak terjangkau (Offline).'}`);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+            });
+
+            // Toggle Panel Filter dari Titik 3
+            const btnFilterToggle = document.getElementById('btn-filter-toggle');
+            const filterPanel = document.getElementById('filter-panel');
+            
+            btnFilterToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                filterPanel.classList.toggle('hidden');
+                filterPanel.classList.toggle('flex');
+            });
+
+            // --- STREAMING_CHUNK:Logika Interaksi UI Dasar dan Navigasi ---
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            let toastTimeout;
+
+            window.showToast = (message) => {
+                toastMessage.textContent = message;
+                toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                }, 2500);
+            };
+
+            const menuButton = document.getElementById('menuButton');
+            const closeButton = document.getElementById('closeButton');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const body = document.body;
+            let isSidebarOpen = false;
+
+            const openSidebar = () => {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100', 'pointer-events-auto');
+                body.style.overflow = 'hidden';
+                isSidebarOpen = true;
+                menuButton.setAttribute('aria-expanded', 'true');
+            };
+
+            const closeSidebar = () => {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.remove('opacity-100', 'pointer-events-auto');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                body.style.overflow = '';
+                sidebar.style.transform = ''; 
+                isSidebarOpen = false;
+                menuButton.setAttribute('aria-expanded', 'false');
+            };
+
+            menuButton.addEventListener('click', openSidebar);
+            closeButton.addEventListener('click', closeSidebar);
+            overlay.addEventListener('click', closeSidebar);
+
+            // Aksi Navigasi File Saat Menu Diklik
+            document.querySelectorAll('#sidebarNav .menu-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault(); // Mencegah reload instan agar animasi selesai
+                    const targetUrl = e.currentTarget.getAttribute('href');
+                    
+                    // Efek aktif pada menu yang diklik
+                    document.querySelectorAll('#sidebarNav .menu-item').forEach(i => i.classList.remove('bg-gray-100'));
+                    e.currentTarget.classList.add('bg-gray-100');
+
+                    closeSidebar();
+                    
+                    // Arahkan ke halaman HTML baru setelah sidebar tertutup
+                    setTimeout(() => {                     
+                        if (targetUrl && targetUrl !== '#') {
+                            window.location.href = targetUrl;
+                        }
+                    }, 300);
+                });
+            });
+
+            // Pencarian Realtime
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = emailData.filter(item => 
+                    item.email.toLowerCase().includes(term) || 
+                    item.subject.toLowerCase().includes(term)
+                );
+                renderEmails(filtered);
+            });
+
+            // Handle buka/tutup Dropdown global
+            document.addEventListener('click', (e) => {
+                
+                // Menutup panel filter jika klik di luar
+                if (!e.target.closest('#filter-panel') && !e.target.closest('#btn-filter-toggle')) {
+                    filterPanel.classList.add('hidden');
+                    filterPanel.classList.remove('flex');
+                }
+
+                const isDropdownBtn = e.target.closest('.dropdown-button');
+                const isDropdownMenu = e.target.closest('.dropdown-menu');
+
+                if (!isDropdownMenu || isDropdownBtn) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        if (!isDropdownBtn || menu.previousElementSibling !== isDropdownBtn) {
+                            menu.classList.add('hidden');
+                        }
+                    });
+                }
+
+                if (isDropdownBtn) {
+                    const menu = isDropdownBtn.nextElementSibling;
+                    if (menu && menu.classList.contains('dropdown-menu')) {
+                        menu.classList.toggle('hidden');
+                    }
+                }
+            });
+
+            // Memilih opsi di Dropdown (Status & API Key)
+            document.querySelectorAll('.dropdown-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    const btn = e.currentTarget;
+                    const htmlContent = btn.dataset.html || btn.innerHTML;
+                    const container = btn.closest('.dropdown-container');
+                    const selectedTextSpan = container.querySelector('.dropdown-selected-text');
+                    
+                    if(selectedTextSpan) {
+                        selectedTextSpan.innerHTML = htmlContent;
+                    }
+                    
+                    container.querySelector('.dropdown-menu').classList.add('hidden');
+                    showToast('Filter diterapkan');
+                });
+            });
+
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                showToast('Memulai unduhan CSV...');
+            });
+
+            // Switch Tabs
+            const tabSending = document.getElementById('tab-sending');
+            const tabReceiving = document.getElementById('tab-receiving');
+            const emptyStateText = document.getElementById('empty-state-text');
+
+            const switchTab = (active, inactive, mode) => {
+                active.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+                active.classList.remove('text-gray-500', 'hover:text-gray-900', 'hover:bg-gray-200/50');
+                inactive.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+                inactive.classList.add('text-gray-500', 'hover:text-gray-900', 'hover:bg-gray-200/50');
+                
+                if(mode === 'recv') {
+                    emptyStateText.textContent = "Belum ada email yang diterima.";
+                    renderEmails([]); 
+                } else {
+                    emptyStateText.textContent = "Coba sesuaikan pencarian atau filter Anda.";
+                    renderEmails(emailData);
+                }
+            };
+            tabSending.addEventListener('click', () => switchTab(tabSending, tabReceiving, 'send'));
+            tabReceiving.addEventListener('click', () => switchTab(tabReceiving, tabSending, 'recv'));
+
+            // --- STREAMING_CHUNK:Sistem Kalender Real-Time ---
+            const calendarGrid = document.getElementById('calendar-grid');
+            const monthYearText = document.getElementById('calendar-month-year');
+            const dateBtnText = document.getElementById('date-btn-text');
+            const dateDropdownContainer = document.getElementById('date-dropdown-container');
+            
+            let currentViewDate = new Date();
+            let selectedFullDate = null;
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+            const renderCalendar = () => {
+                calendarGrid.innerHTML = '';
+                const year = currentViewDate.getFullYear();
+                const month = currentViewDate.getMonth();
+                
+                monthYearText.textContent = `${monthNames[month]} ${year}`;
+                
+                const firstDay = new Date(year, month, 1).getDay(); 
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const today = new Date();
+
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyDiv = document.createElement('div');
+                    calendarGrid.appendChild(emptyDiv);
+                }
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const btn = document.createElement('button');
+                    btn.textContent = i;
+                    
+                    const isToday = today.getDate() === i && today.getMonth() === month && today.getFullYear() === year;
+                    const isSelected = selectedFullDate && selectedFullDate.getDate() === i && selectedFullDate.getMonth() === month && selectedFullDate.getFullYear() === year;
+
+                    btn.className = "py-1.5 rounded-md transition-colors w-full";
+                    
+                    if (isSelected) {
+                        btn.classList.add('bg-blue-600', 'text-white', 'font-medium', 'shadow-sm');
+                    } else if (isToday) {
+                        btn.classList.add('bg-blue-50', 'text-blue-700', 'font-bold', 'hover:bg-blue-100');
+                    } else {
+                        btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+                    }
+
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectedFullDate = new Date(year, month, i);
+                        
+                        document.querySelectorAll('.date-preset-btn').forEach(b => {
+                            b.classList.remove('bg-blue-100', 'text-blue-700');
+                            b.classList.add('hover:bg-gray-200', 'text-gray-700');
+                        });
+
+                        const formattedDate = `${i} ${monthNames[month].substring(0,3)} ${year}`;
+                        dateBtnText.textContent = formattedDate;
+                        
+                        renderCalendar();
+                        dateDropdownContainer.querySelector('.dropdown-menu').classList.add('hidden');
+                        showToast(`Tanggal difilter ke ${formattedDate}`);
+                    });
+
+                    calendarGrid.appendChild(btn);
+                }
+            };
+
+            document.getElementById('prev-month').addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentViewDate.setMonth(currentViewDate.getMonth() - 1);
+                renderCalendar();
+            });
+
+            document.getElementById('next-month').addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentViewDate.setMonth(currentViewDate.getMonth() + 1);
+                renderCalendar();
+            });
+
+            document.querySelectorAll('.date-preset-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const val = e.currentTarget.dataset.value;
+                    
+                    document.querySelectorAll('.date-preset-btn').forEach(b => {
+                        b.classList.remove('bg-blue-100', 'text-blue-700');
+                        b.classList.add('hover:bg-gray-200', 'text-gray-700');
+                    });
+                    e.currentTarget.classList.remove('hover:bg-gray-200', 'text-gray-700');
+                    e.currentTarget.classList.add('bg-blue-100', 'text-blue-700');
+
+                    selectedFullDate = null;
+                    currentViewDate = new Date(); 
+                    renderCalendar();
+
+                    dateBtnText.textContent = val;
+                    dateDropdownContainer.querySelector('.dropdown-menu').classList.add('hidden');
+                    showToast(`Menampilkan data untuk ${val}`);
+                });
+            });
+
+            document.querySelector('#date-dropdown-container .dropdown-menu').addEventListener('click', (e) => {
+                if(!e.target.closest('button')) {
+                    e.stopPropagation();
+                }
+            });
+
+            renderCalendar();
+        });
+    </script>
 </body>
 </html>
